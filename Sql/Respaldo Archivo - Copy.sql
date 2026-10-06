@@ -132,6 +132,19 @@ CREATE TABLE IF NOT EXISTS Recetas (
         REFERENCES Atenciones(id_atencion) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS Roles (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_rol VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE IF NOT EXISTS Usuarios (
+    rut VARCHAR(12) PRIMARY KEY,
+    clave VARCHAR(255) NOT NULL,
+    id_rol INT NOT NULL,
+    activo BOOLEAN DEFAULT 1,
+    CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (id_rol) 
+        REFERENCES Roles(id_rol) ON UPDATE CASCADE
+);
+
 
 /* =========================================
    2. CREACIÓN DE RUTINAS (View, Func, SP, Trigger)
@@ -2480,3 +2493,14 @@ INSERT INTO Recetas (id_atencion, medicamento, dosis, dias_tratamiento) VALUES
 (36, 'Salbutamol', '1 al día en ayunas', 9),
 (120, 'Amoxicilina', '1 comprimido cada 8 horas', 17),
 (30, 'Amoxicilina', '1 comprimido cada 8 horas', 8);
+
+INSERT INTO Roles (nombre_rol) VALUES 
+('Administrador'), 
+('Medico'), 
+('Paciente');
+
+INSERT INTO Usuarios (rut, clave, id_rol)
+SELECT rut_med, '123456', 2 FROM Medicos;
+
+INSERT INTO Usuarios (rut, clave, id_rol)
+SELECT rut_pac, '123456', 3 FROM Pacientes;
