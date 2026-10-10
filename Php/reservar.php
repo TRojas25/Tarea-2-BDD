@@ -14,6 +14,7 @@ $especialidades = $pdo->query("SELECT * FROM Especialidades")->fetchAll(PDO::FET
 $medicos_disponibles = [];
 $bloques_libres = [];
 $mensaje = "";
+$error = ""; // Agregamos la variable de error
 
 $id_cm = isset($_POST['id_cm']) ? $_POST['id_cm'] : null;
 $id_espec = isset($_POST['id_espec']) ? $_POST['id_espec'] : null;
@@ -40,7 +41,7 @@ $fecha_minima = date('Y-m-d', strtotime('+1 day'));
 // 2. Si hay médico y fecha seleccionada (y no estamos en el paso de confirmar todavía)
 if ($rut_med && $fecha && !$confirmar_final && !$hora_seleccionada) {
     if ($fecha < $fecha_minima) {
-        $mensaje = "Error: Solo se permiten reservas desde el día " . $fecha_minima . " en adelante.";
+        $error = "Error: Solo se permiten reservas desde el día " . $fecha_minima . " en adelante.";
         $fecha = null;
     } else {
         $horarios_teoricos = [
@@ -50,7 +51,7 @@ if ($rut_med && $fecha && !$confirmar_final && !$hora_seleccionada) {
             "15:00:00", "15:30:00", "16:00:00", "16:30:00"
         ];
 
-        $sql_ocupadas = "SELECT TIME(fecha_y_hora) as hora_cita FROM Citas WHERE rut_med = ? AND DATE(fecha_y_hora) = ?";
+        $sql_ocupadas = "SELECT TIME(fecha_y_hora) as hora_cita FROM Citas WHERE rut_med = ? AND DATE(fecha_y_hora) = ? AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado IN ('Reservada', 'Confirmada'))";
         $stmt_ocu = $pdo->prepare($sql_ocupadas);
         $stmt_ocu->execute([$rut_med, $fecha]);
         $ocupadas = $stmt_ocu->fetchAll(PDO::FETCH_COLUMN);
@@ -59,24 +60,65 @@ if ($rut_med && $fecha && !$confirmar_final && !$hora_seleccionada) {
     }
 }
 
-// 3. Procesar inserción final cuando el usuario hace clic en "Confirmar Reserva" en el paso extra
+// 3. Procesar inserción final cuando el usuario hace clic en "Confirmar Reserva"
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $confirmar_final == '1') {
     $rut_pac = $_SESSION['rut'];
-    $fecha_y_hora_final = $fecha . ' ' . $hora_seleccionada;
+    
+    // Corregimos la forma de armar la fecha y hora final uniendo los inputs
+    $fecha_y_hora_final = $_POST['fecha'] . ' ' . $_POST['hora_seleccionada']; 
+    
+    $rut_med = $_POST['rut_med'];
+    $id_cm = $_POST['id_cm'];
+    $id_espec = $_POST['id_espec'];
 
+    // Obtenemos el ID del estado "Reservada"
     $stmt_est = $pdo->query("SELECT id_estado FROM Estado WHERE tipo_estado = 'Reservada'");
     $id_estado = $stmt_est->fetchColumn();
 
-    $sql_insert = "INSERT INTO Citas (rut_pac, rut_med, id_cm, id_espec, id_estado, fecha_y_hora, comentario) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt_ins = $pdo->prepare($sql_insert);
-    
-    if ($stmt_ins->execute([$rut_pac, $rut_med, $id_cm, $id_espec, $id_estado, $fecha_y_hora_final, $comentario])) {
-        $mensaje = "¡Cita reservada y confirmada con éxito para el " . $fecha_y_hora_final . "!";
-        // Limpiar selecciones
-        $id_cm = $id_espec = $rut_med = $fecha = $hora_seleccionada = null;
+    // 1. REGLA: El paciente no puede tener dos citas a la misma fecha y hora
+    $stmt_paciente = $pdo->prepare("SELECT COUNT(*) FROM Citas WHERE rut_pac = ? AND fecha_y_hora = ? AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado != 'Cancelada')");
+    $stmt_paciente->execute([$rut_pac, $fecha_y_hora_final]);
+    if ($stmt_paciente->fetchColumn() > 0) {
+        $error = "Ya tienes otra cita agendada en esa misma fecha y hora.";
+    }
+
+    // 2. REGLA: Sin sobre-agendamiento del médico
+    $stmt_medico = $pdo->prepare("SELECT COUNT(*) FROM Citas WHERE rut_med = ? AND fecha_y_hora = ? AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado != 'Cancelada')");
+    $stmt_medico->execute([$rut_med, $fecha_y_hora_final]);
+    if (empty($error) && $stmt_medico->fetchColumn() > 0) {
+        $error = "El médico ya tiene una cita ocupada en ese horario. Alguien más lo reservó primero.";
+    }
+
+    // 3. REGLA: El médico debe poseer la especialidad solicitada
+    $stmt_espec = $pdo->prepare("SELECT COUNT(*) FROM Medico_especialidad WHERE rut_med = ? AND id_espec = ?");
+    $stmt_espec->execute([$rut_med, $id_espec]);
+    if (empty($error) && $stmt_espec->fetchColumn() == 0) {
+        $error = "El médico seleccionado no posee la especialidad requerida.";
+    }
+
+    // 4. REGLA: El médico debe atender en el centro seleccionado
+    $stmt_centro = $pdo->prepare("SELECT COUNT(*) FROM Medicos_centro WHERE rut_med = ? AND id_cm = ?");
+    $stmt_centro->execute([$rut_med, $id_cm]);
+    if (empty($error) && $stmt_centro->fetchColumn() == 0) {
+        $error = "El médico seleccionado no atiende en el centro médico elegido.";
+    }
+
+    // Ejecutar el INSERT solo si pasó TODAS las validaciones sin errores
+    if (empty($error)) {
+        $sql_insert = "INSERT INTO Citas (rut_pac, rut_med, id_cm, id_espec, id_estado, fecha_y_hora, comentario) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmt_ins = $pdo->prepare($sql_insert);
+        
+        if ($stmt_ins->execute([$rut_pac, $rut_med, $id_cm, $id_espec, $id_estado, $fecha_y_hora_final, $comentario])) {
+            $mensaje = "¡Cita reservada y confirmada con éxito para el " . date('d-m-Y H:i', strtotime($fecha_y_hora_final)) . "!";
+            // Limpiar selecciones
+            $id_cm = $id_espec = $rut_med = $fecha = $hora_seleccionada = $confirmar_final = null;
+        } else {
+            $error = "Error de base de datos al confirmar la reserva.";
+        }
     } else {
-        $mensaje = "Error al confirmar la reserva.";
+        // Si hay un error de validación, quitamos la marca de confirmación final para que vuelva a intentar
+        $confirmar_final = null;
     }
 }
 
@@ -112,7 +154,8 @@ if ($rut_med) {
         .container { padding: 20px; max-width: 650px; margin: auto; background: white; margin-top: 30px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         select, input, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
         button { background-color: #004d99; color: white; border: none; cursor: pointer; border-radius: 4px; }
-        .alert { padding: 12px; background: #d4edda; color: #155724; margin-bottom: 15px; border-radius: 4px; font-weight: bold; }
+        .alert-success { padding: 12px; background: #d4edda; color: #155724; margin-bottom: 15px; border-radius: 4px; font-weight: bold; }
+        .alert-error { padding: 12px; background: #f8d7da; color: #721c24; margin-bottom: 15px; border-radius: 4px; font-weight: bold; border: 1px solid #f5c6cb; }
         .bloque-btn { background: #28a745; color: white; padding: 10px; margin: 5px; border: none; cursor: pointer; border-radius: 4px; width: auto; display: inline-block; }
         .resumen-box { background: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
         .btn-cancelar { background: #6c757d; margin-top: 5px; }
@@ -125,7 +168,10 @@ if ($rut_med) {
         <h2>Agendar Hora Médica</h2>
         
         <?php if(!empty($mensaje)): ?>
-            <div class="alert"><?php echo $mensaje; ?></div>
+            <div class="alert-success"><?php echo $mensaje; ?></div>
+        <?php endif; ?>
+        <?php if(!empty($error)): ?>
+            <div class="alert-error"><?php echo $error; ?></div>
         <?php endif; ?>
 
         <!-- PASO EXTRA: PANTALLA DE PRE-CONFIRMACIÓN -->
@@ -135,7 +181,7 @@ if ($rut_med) {
                 <p><strong>Centro Médico:</strong> <?php echo $nombre_centro; ?></p>
                 <p><strong>Especialidad:</strong> <?php echo $nombre_especialidad; ?></p>
                 <p><strong>Médico:</strong> <?php echo $nombre_medico; ?></p>
-                <p><strong>Fecha y Hora:</strong> <?php echo $fecha . ' ' . date('H:i', strtotime($hora_seleccionada)); ?></p>
+                <p><strong>Fecha y Hora:</strong> <?php echo date('d-m-Y', strtotime($fecha)) . ' a las ' . date('H:i', strtotime($hora_seleccionada)); ?></p>
                 <?php if($comentario): ?>
                     <p><strong>Comentario:</strong> <?php echo htmlspecialchars($comentario); ?></p>
                 <?php endif; ?>
@@ -148,7 +194,7 @@ if ($rut_med) {
                 <input type="hidden" name="rut_med" value="<?php echo $rut_med; ?>">
                 <input type="hidden" name="fecha" value="<?php echo $fecha; ?>">
                 <input type="hidden" name="hora_seleccionada" value="<?php echo $hora_seleccionada; ?>">
-                <input type="hidden" name="comentario" value="<?php echo htmlspecialchars($comentario); ?>">
+                <input type="hidden" name="comentario" value="<?php echo htmlspecialchars($comentario ?? ''); ?>">
                 <input type="hidden" name="confirmar_final" value="1">
 
                 <button type="submit" style="background-color: #28a745; font-size: 1.1em;">Sí, Confirmar Reserva</button>
@@ -206,7 +252,7 @@ if ($rut_med) {
 
             <?php if($fecha && count($bloques_libres) > 0): ?>
                 <hr>
-                <h3>Bloques Horarios Disponibles para el <?php echo $fecha; ?>:</h3>
+                <h3>Bloques Horarios Disponibles para el <?php echo date('d-m-Y', strtotime($fecha)); ?>:</h3>
                 <form method="POST" action="">
                     <input type="hidden" name="id_cm" value="<?php echo $id_cm; ?>">
                     <input type="hidden" name="id_espec" value="<?php echo $id_espec; ?>">

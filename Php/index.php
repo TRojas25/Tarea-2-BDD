@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $rut = trim($_POST['rut']);
     $clave = trim($_POST['clave']);
 
-    // Buscamos el usuario y su rol
     $query = "SELECT u.rut, u.clave, r.nombre_rol 
               FROM Usuarios u 
               JOIN Roles r ON u.id_rol = r.id_rol 
@@ -16,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->execute(['rut' => $rut]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Verificamos si existe y si la clave coincide (usamos '123456' por ahora)
     if ($usuario && $clave === $usuario['clave']) {
         $_SESSION['rut'] = $usuario['rut'];
         $_SESSION['rol'] = $usuario['nombre_rol'];
@@ -51,6 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <button type="submit">Entrar</button>
         </form>
+        <p style="text-align: center; margin-top: 15px;">
+        ¿No tienes cuenta? <a href="registro.php" style="color: #004d99; font-weight: bold;">Regístrate aquí (Solo Pacientes)</a>
+        </p>
     </div>
 </body>
 </html>
