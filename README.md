@@ -8,6 +8,10 @@ Instrucciones: Por hacer
 
 
 
+Reglas de negocio:
+
+Al momento de crear una contraseña el único requisito es que sea de mínimo 6 caracteres.
+
 Supuestos:
 
 Cuando el administrador desea quitar una especialidad o un centro a un médico que tenga citas futuras asociadas, 
