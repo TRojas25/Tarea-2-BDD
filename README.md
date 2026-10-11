@@ -3,8 +3,14 @@
 Integrantes: Felipe Brito Alarcón (202210034-6) y Tomás Rojas Villarroel (202210032-k)
 
 Link Repositorio Github: https://github.com/TRojas25/Tarea-2-BDD
+
 Instrucciones para correcta ejecución:
 
+1. Copiar la carpeta PHP dentro de `htdocs` de XAMPP.
+2. Iniciar Apache y MySQL desde el panel de XAMPP.
+3. Importar el script SQL desde phpMyAdmin (`http://localhost/phpmyadmin`):
+   creacion.sql
+4. Abrir el sistema en: <http://localhost/PHP/>
 
 
 
