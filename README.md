@@ -21,6 +21,9 @@ Reglas de negocio:
 
 Al momento de crear una contraseña los requisitos mínimos son: seis caracteres en total, una mayuscula, tres numeros y un simbolo.
 
+Si un paciente borra su cuenta, no se borrarán las citas ni atenciones de la base de datos.
+Si además este paciente quiere volver a crear su cuenta, se actualizan los datos como su nombre y correo electrónico de la base de datos y se mostraran las citas y atenciones pasadas.
+
 Supuestos:
 
 Cuando el administrador desea quitar una especialidad o un centro a un médico que tenga citas futuras asociadas, 
