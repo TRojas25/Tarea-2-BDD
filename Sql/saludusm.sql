@@ -1,9 +1,9 @@
 CREATE DATABASE IF NOT EXISTS SaludUSM;
 USE SaludUSM;
 
-/* =========================================
-   1. CREACIÓN DE TABLAS
-========================================= */
+/*
+    CREACIÓN DE TABLAS
+ */
 
 -- 1. Prevision_de_salud
 CREATE TABLE IF NOT EXISTS Prevision_de_salud (
@@ -146,9 +146,9 @@ CREATE TABLE IF NOT EXISTS Usuarios (
 );
 
 
-/* =========================================
-   2. CREACIÓN DE RUTINAS (View, Func, SP, Trigger)
-========================================= */
+/*
+   CREACIÓN DE RUTINAS (View, Func, SP, Trigger)
+ */
 
 -- Eliminar rutinas si ya existen para evitar errores al importar
 DROP VIEW IF EXISTS Vista_Resumen_Citas;
@@ -199,9 +199,9 @@ END //
 DELIMITER ;
 
 
-/* =========================================
-   3. POBLAMIENTO DE DATOS
-========================================= */
+/* 
+   POBLAMIENTO DE DATOS
+*/
 
 -- Limpiar tablas en el orden correcto (hijos primero, padres después)
 DELETE FROM Recetas;
