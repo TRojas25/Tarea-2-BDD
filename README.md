@@ -3,8 +3,17 @@
 Integrantes: Felipe Brito Alarcón (202210034-6) y Tomás Rojas Villarroel (202210032-k)
 
 Link Repositorio Github: https://github.com/TRojas25/Tarea-2-BDD
-Instrucciones: Por hacer
+Instrucciones para correcta ejecución:
 
+
+
+
+
+Usuarios de prueba:
+
+Pacientes: 22000001-1 Contraseña: Pac123#
+Médicos: 12000001-1  Contraseña: Med123#
+Administrador: 10000000-0 Contraseña: Adm123#
 
 
 
