@@ -18,7 +18,9 @@
 ## Usuarios de prueba:
 
 Pacientes: 22000001-1 Contraseña: Pac123#
+
 Médicos: 12000001-1  Contraseña: Med123#
+
 Administrador: 10000000-0 Contraseña: Adm123#
 
 
