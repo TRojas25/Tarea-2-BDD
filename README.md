@@ -9,7 +9,7 @@
 1. Copiar la carpeta PHP dentro de `htdocs` de XAMPP.
 2. Iniciar Apache y MySQL desde el panel de XAMPP.
 3. Importar el script SQL desde phpMyAdmin (`http://localhost/phpmyadmin`):
-   creacion.sql
+   saludusm.sql
 4. Abrir el sistema en: <http://localhost/PHP/>
 
 
