@@ -10,11 +10,7 @@ Instrucciones: Por hacer
 
 Reglas de negocio:
 
-Al momento de crear una contraseña los requisitos mínimos son:
-seis caracteres en total
-una mayuscula
-tres numeros
-y un simbolo.
+Al momento de crear una contraseña los requisitos mínimos son: seis caracteres en total, una mayuscula, tres numeros y un simbolo.
 
 Supuestos:
 
