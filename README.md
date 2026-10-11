@@ -1,6 +1,8 @@
 # Tarea-2-BDD
 
 Integrantes: Felipe Brito Alarcón (202210034-6) y Tomás Rojas Villarroel (202210032-k)
+
+Link Repositorio Github: https://github.com/TRojas25/Tarea-2-BDD
 Instrucciones: Por hacer
 
 
