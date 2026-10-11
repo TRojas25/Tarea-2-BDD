@@ -10,20 +10,25 @@ if (session_status() == PHP_SESSION_NONE) {
 
     <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'Administrador'): ?>
         <a href="admin.php" style="color: white; text-decoration: none; margin: 0 15px;">Panel de Gestión</a>
-        <a href="crearmedico.php" style="color: white; text-decoration: none; margin: 0 15px;">Crear Médico</a>
+        <a href="admin_centros.php" style="color: white; margin: 0 10px;">Centros Médicos</a>
+        <a href="admin_medicos.php" style="color: white; margin: 0 10px;">Asignación Médicos</a>
     <?php endif; ?>
     
     <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'Medico'): ?>
         <a href="agenda.php" style="color: white; text-decoration: none; margin: 0 15px;">Mi Agenda</a>
+            <a href="historial.php" style="color: white; text-decoration: none; margin: 0 15px;">Historial Clínico</a>
         
     <?php elseif (isset($_SESSION['rol']) && $_SESSION['rol'] === 'Paciente'): ?>
         <a href="reservar.php" style="color: white; text-decoration: none; margin: 0 15px;">Reservar Cita</a>
         <a href="mis_recetas.php" style="color: white; text-decoration: none; margin: 0 15px;">Mis Recetas</a>
+        <a href="historial.php" style="color: white; text-decoration: none; margin: 0 15px;">Historial Clínico</a>
     <?php endif; ?>
 
     <a href="perfil.php" style="color: white; text-decoration: none; margin: 0 15px;">Mi Perfil</a>
     
     <a href="citas.php" style="color: white; text-decoration: none; margin: 0 15px;">Mis Citas</a>
+    
+
     
     <span style="float: right;">
         Usuario: <?php echo $_SESSION['rut']; ?> | 

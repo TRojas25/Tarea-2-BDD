@@ -12,9 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $rut = trim($_POST['rut']);
     $clave = $_POST['clave'];
     $nombre = trim($_POST['nombre']);
-    $email = trim($_POST['email']);
     $telefono = trim($_POST['telefono']);
-    $direccion = trim($_POST['direccion']);
     $id_prevision = $_POST['id_prevision'];
 
     if (!preg_match('/^\d{7,8}-[0-9kK]$/', $rut)) {
@@ -23,25 +21,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif (strlen($clave) < 6) {
         $error = "La contraseña debe tener un mínimo de 6 caracteres.";
     } 
+    elseif (!preg_match('/[A-Z]/', $clave)) {
+        $error = "La contraseña debe contener al menos una letra mayúscula.";
+    } 
+    elseif (preg_match_all('/[0-9]/', $clave) < 3) {
+        $error = "La contraseña debe contener al menos 3 números.";
+    } 
+    elseif (!preg_match('/[\W_]/', $clave)) {
+        $error = "La contraseña debe contener al menos un símbolo (ej: #, !, $, etc.).";
+    }
     else {
+        // Solo verificamos el RUT en Usuarios
         $stmt_check_rut = $pdo->prepare("SELECT COUNT(*) FROM Usuarios WHERE rut = ?");
         $stmt_check_rut->execute([$rut]);
-        
-        $stmt_check_email = $pdo->prepare("SELECT COUNT(*) FROM Pacientes WHERE Email = ?");
-        $stmt_check_email->execute([$email]);
 
         if ($stmt_check_rut->fetchColumn() > 0) {
             $error = "El RUT ingresado ya se encuentra registrado en el sistema.";
-        } elseif ($stmt_check_email->fetchColumn() > 0) {
-            $error = "El correo electrónico ya está asociado a otro paciente.";
         } else {
             try {
                 $pdo->beginTransaction();
 
-                $sql_pac = "INSERT INTO Pacientes (rut_pac, Nombre_pac, Email, Telefono, Direccion, id_prevision) VALUES (?, ?, ?, ?, ?, ?)";
-                $stmt_pac = $pdo->prepare($sql_pac);
-                $stmt_pac->execute([$rut, $nombre, $email, $telefono, $direccion, $id_prevision]);
+                // Verificar si el paciente ya existe en el historial médico
+                $stmt_check_paciente = $pdo->prepare("SELECT COUNT(*) FROM Pacientes WHERE rut_pac = ?");
+                $stmt_check_paciente->execute([$rut]);
+                $paciente_existe = $stmt_check_paciente->fetchColumn() > 0;
 
+                if ($paciente_existe) {
+                    // Si ya existe (había borrado su cuenta), ACTUALIZAMOS sus datos
+                    $sql_pac = "UPDATE Pacientes SET Nombre_pac = ?, telefono_de_contacto = ?, id_prevision = ? WHERE rut_pac = ?";
+                    $stmt_pac = $pdo->prepare($sql_pac);
+                    $stmt_pac->execute([$nombre, $telefono, $id_prevision, $rut]);
+                } else {
+                    // Si es totalmente nuevo, insertamos
+                    $sql_pac = "INSERT INTO Pacientes (rut_pac, Nombre_pac, telefono_de_contacto, id_prevision) VALUES (?, ?, ?, ?)";
+                    $stmt_pac = $pdo->prepare($sql_pac);
+                    $stmt_pac->execute([$rut, $nombre, $telefono, $id_prevision]);
+                }
+
+                //  Crear las credenciales de acceso nuevamente
                 $clave_hash = password_hash($clave, PASSWORD_DEFAULT);
                 $sql_usu = "INSERT INTO Usuarios (rut, clave, id_rol, activo) VALUES (?, ?, 3, 1)";
                 $stmt_usu = $pdo->prepare($sql_usu);
@@ -91,17 +108,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label>Nombre Completo:</label>
             <input type="text" name="nombre" placeholder="Nombre y Apellido" required value="<?php echo htmlspecialchars($_POST['nombre'] ?? ''); ?>">
             
-            <label>Correo Electrónico:</label>
-            <input type="email" name="email" placeholder="correo@ejemplo.com" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
-            
-            <label>Contraseña (Mínimo 6 caracteres):</label>
-            <input type="password" name="clave" placeholder="••••••••" required>
+            <label>Contraseña (Mín. 6 caracteres, 1 mayúscula, 3 números y 1 símbolo):</label>
+            <input type="password" name="clave" placeholder="Ej: DonFede123#" required>
             
             <label>Teléfono:</label>
             <input type="text" name="telefono" placeholder="+569..." value="<?php echo htmlspecialchars($_POST['telefono'] ?? ''); ?>">
-            
-            <label>Dirección:</label>
-            <input type="text" name="direccion" placeholder="Calle, Número, Comuna" value="<?php echo htmlspecialchars($_POST['direccion'] ?? ''); ?>">
             
             <label>Previsión de Salud:</label>
             <select name="id_prevision" required>

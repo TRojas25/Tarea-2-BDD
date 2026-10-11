@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Forzar la zona horaria oficial de Chile
 date_default_timezone_set('America/Santiago');
 
 if (!isset($_SESSION['rut']) || $_SESSION['rol'] !== 'Medico') {
@@ -10,7 +9,6 @@ if (!isset($_SESSION['rut']) || $_SESSION['rol'] !== 'Medico') {
 require 'conexion.php';
 
 $rut_medico = $_SESSION['rut'];
-// Por defecto toma la fecha actual de Chile
 $fecha_filtro = isset($_GET['fecha']) ? $_GET['fecha'] : date('Y-m-d');
 
 // Consulta de citas para el médico y fecha seleccionada
@@ -73,7 +71,7 @@ $citas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?php echo $c['nombre_cm'] . ' (' . $c['comuna'] . ')'; ?></td>
                     <td><?php echo $c['tipo_estado']; ?></td>
                     <td>
-                        <a href="registrar_atencion.php?id_cita=<?php echo $c['id_cita']; ?>" style="color: #004d99; font-weight: bold; text-decoration: none;">Atender</a>
+                        <a href="atencion.php?id_cita=<?php echo $c['id_cita']; ?>" style="color: #004d99; font-weight: bold; text-decoration: none;">Atender</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>

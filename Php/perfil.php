@@ -13,7 +13,7 @@ $rol = $_SESSION['rol'];
 $mensaje = "";
 $error = "";
 
-//  Lógica para eliminar cuenta (Exclusivo Pacientes)
+// Eliminar cuenta pacientes
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar_cuenta']) && $rol === 'Paciente') {
     try {
         $pdo->beginTransaction();
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar_cuenta']) &&
         }
 
         //  Eliminar el registro de Usuarios (quitar el acceso al portal)
-        // No se borra de 'Pacientes' para mantener la integridad del historial histórico.
+        // No se borra de 'Pacientes' para mantener la integridad del historial.
         $stmt_usu = $pdo->prepare("DELETE FROM Usuarios WHERE rut = ?");
         $stmt_usu->execute([$rut]);
         

@@ -15,11 +15,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->execute(['rut' => $rut]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($usuario && $clave === $usuario['clave']) {
-        $_SESSION['rut'] = $usuario['rut'];
-        $_SESSION['rol'] = $usuario['nombre_rol'];
-        header("Location: dashboard.php");
-        exit;
+    if ($usuario) {
+        //  Verificamos si la contraseña coincide
+        $es_valida = false;
+        $necesita_actualizarse = false;
+
+        if (password_verify($clave, $usuario['clave'])) {
+            // Caso A: Es un usuario nuevo con contraseña ya encriptada
+            $es_valida = true;
+        } elseif ($clave === $usuario['clave']) {
+            // Caso B: Es un usuario antiguo con contraseña en texto plano
+            $es_valida = true;
+            $necesita_actualizarse = true; 
+        }
+
+        if ($es_valida) {
+            if ($necesita_actualizarse) {
+                $nuevo_hash = password_hash($clave, PASSWORD_DEFAULT);
+                $stmt_update = $pdo->prepare("UPDATE Usuarios SET clave = ? WHERE rut = ?");
+                $stmt_update->execute([$nuevo_hash, $usuario['rut']]);
+            }
+
+            $_SESSION['rut'] = $usuario['rut'];
+            $_SESSION['rol'] = $usuario['nombre_rol'];
+            header("Location: dashboard.php");
+            exit;
+        } else {
+            $error = "RUT o contraseña incorrectos.";
+        }
     } else {
         $error = "RUT o contraseña incorrectos.";
     }

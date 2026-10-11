@@ -13,9 +13,7 @@ $rol = $_SESSION['rol'];
 $mensaje = "";
 $error = "";
 
-// =====================================================================
-// 1. REGLA DE NEGOCIO: AUTO-CANCELAR CITAS VENCIDAS
-// =====================================================================
+//  AUTO-CANCELAR CITAS VENCIDAS
 try {
     $id_cancelada = $pdo->query("SELECT id_estado FROM Estado WHERE tipo_estado = 'Cancelada'")->fetchColumn();
     $sql_vencidas = "UPDATE Citas 
@@ -24,12 +22,11 @@ try {
                      AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado IN ('Reservada', 'Confirmada'))";
     $pdo->prepare($sql_vencidas)->execute([$id_cancelada]);
 } catch (Exception $e) {
-    // Ignorar error silenciosamente para no interrumpir la vista
+
 }
 
-// =====================================================================
-// 2. ACCIONES DEL PACIENTE (Cancelar)
-// =====================================================================
+// ACCIONES DEL PACIENTE (Cancelar)
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $rol === 'Paciente' && isset($_POST['cancelar_cita'])) {
     $id_cita = $_POST['id_cita'];
     $stmt_val = $pdo->prepare("SELECT fecha_y_hora, id_estado FROM Citas WHERE id_cita = ? AND rut_pac = ?");
@@ -47,9 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $rol === 'Paciente' && isset($_POST
     }
 }
 
-// =====================================================================
-// 3. ACCIONES DEL MÉDICO (Cambiar Estado)
-// =====================================================================
+// ACCIONES DEL MÉDICO (Cambiar Estado)
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $rol === 'Medico' && isset($_POST['nuevo_estado'])) {
     $id_cita = $_POST['id_cita_medico'];
     $nombre_nuevo_estado = $_POST['nuevo_estado'];
@@ -70,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $rol === 'Medico' && isset($_POST['
     }
 }
 
-// --- OBTENER DATOS PARA LOS SELECTS DEL FILTRO ---
+// OBTENER DATOS PARA LOS SELECTS DEL FILTRO 
 $centros = $pdo->query("SELECT * FROM Centros_medicos ORDER BY nombre_cm")->fetchAll(PDO::FETCH_ASSOC);
 $regiones = $pdo->query("SELECT DISTINCT region FROM Centros_medicos ORDER BY region")->fetchAll(PDO::FETCH_COLUMN);
 $especialidades = $pdo->query("SELECT * FROM Especialidades ORDER BY tipo")->fetchAll(PDO::FETCH_ASSOC);
@@ -79,7 +75,7 @@ $estados = $pdo->query("SELECT * FROM Estado")->fetchAll(PDO::FETCH_ASSOC);
 $previsiones = $pdo->query("SELECT * FROM Prevision_de_salud")->fetchAll(PDO::FETCH_ASSOC);
 $pacientes = $pdo->query("SELECT * FROM Pacientes ORDER BY Nombre_pac")->fetchAll(PDO::FETCH_ASSOC);
 
-// --- CONSTRUIR LA CONSULTA DINÁMICA ---
+// CONSTRUIR CONSULTA 
 $sql = "SELECT c.id_cita, c.fecha_y_hora, p.Nombre_pac, m.Nombre_med, e.tipo AS especialidad, 
                cm.nombre_cm, cm.region, est.tipo_estado, prev.Nombre_prevision
         FROM Citas c
@@ -147,7 +143,7 @@ $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php if (!empty($error)): ?><div class="alert-error"><?php echo $error; ?></div><?php endif; ?>
         <?php if (!empty($mensaje)): ?><div class="alert-success"><?php echo $mensaje; ?></div><?php endif; ?>
 
-        <!-- FORMULARIO DE FILTROS -->
+        <!--FORMULARIO DE FILTROS -->
         <form class="filtros" method="GET" action="">
             <div><label>Fecha Inicio:</label><input type="date" name="fecha_inicio" value="<?php echo $_GET['fecha_inicio'] ?? ''; ?>"></div>
             <div><label>Fecha Fin:</label><input type="date" name="fecha_fin" value="<?php echo $_GET['fecha_fin'] ?? ''; ?>"></div>
@@ -251,15 +247,21 @@ $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <!-- SELECTOR MÉDICO -->
                             <?php if ($rol === 'Medico'): ?>
                             <td>
-                                <form method="POST" action="">
+                                <!-- Formulario para cambiar estado -->
+                                <form method="POST" action="" style="margin-bottom: 5px;">
                                     <input type="hidden" name="id_cita_medico" value="<?php echo $row['id_cita']; ?>">
-                                    <select name="nuevo_estado" onchange="this.form.submit()" style="padding: 5px; font-size: 0.85em;">
+                                    <select name="nuevo_estado" onchange="this.form.submit()" style="padding: 3px; font-size: 0.85em; width: 100%;">
                                         <option value="">Cambiar a...</option>
                                         <option value="Confirmada">Confirmada</option>
                                         <option value="Atendida">Atendida</option>
                                         <option value="No Asistió">No Asistió</option>
                                     </select>
                                 </form>
+                                
+                                <!-- Botón para Gestionar Atención SOLO si está Atendida -->
+                                <?php if ($estado_lower === 'atendida'): ?>
+                                    <a href="atencion.php?id_cita=<?php echo $row['id_cita']; ?>" style="display:block; text-align:center; background-color:#17a2b8; color:white; text-decoration:none; padding:4px; border-radius:3px; font-size:0.85em; font-weight:bold;">📋 Ficha Clínica</a>
+                                <?php endif; ?>
                             </td>
                             <?php endif; ?>
                         </tr>

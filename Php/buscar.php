@@ -10,7 +10,7 @@ $busqueda = isset($_GET['q']) ? trim($_GET['q']) : '';
 $resultados = [];
 
 if ($busqueda !== '') {
-    // Consulta optimizada para agrupar especialidades y centros médicos por cada médico
+    // Consulta para agrupar especialidades y centros médicos por cada médico
     $sql = "SELECT m.Nombre_med, m.Email,
                    GROUP_CONCAT(DISTINCT e.tipo SEPARATOR ', ') AS especialidades,
                    GROUP_CONCAT(DISTINCT CONCAT(cm.nombre_cm, ' (', cm.comuna, ')') SEPARATOR '<br>') AS centros

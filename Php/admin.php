@@ -8,7 +8,7 @@ if (!isset($_SESSION['rut'])) {
 }
 require 'conexion.php';
 
-// 1. Estadísticas por Centro Médico usando 'id_cm' correctamente
+// Estadísticas por centro medico 
 $sql_centros = "SELECT cm.id_cm, cm.nombre_cm, cm.comuna, 
                 COUNT(c.id_cita) AS total_citas,
                 SUM(CASE WHEN est.tipo_estado = 'No Asistió' THEN 1 ELSE 0 END) AS inasistencias
@@ -18,7 +18,7 @@ $sql_centros = "SELECT cm.id_cm, cm.nombre_cm, cm.comuna,
                 GROUP BY cm.id_cm, cm.nombre_cm, cm.comuna";
 $centros = $pdo->query($sql_centros)->fetchAll(PDO::FETCH_ASSOC);
 
-// 2. Top 5 Diagnósticos más frecuentes de la red
+// Top 5 Diagnósticos más frecuentes
 $sql_diag = "SELECT d.descripcion, COUNT(da.id_diag) AS frecuencia
              FROM Diagnosticos_atenciones da
              JOIN Diagnosticos d ON da.id_diag = d.id_diag

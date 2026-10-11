@@ -14,7 +14,7 @@ $especialidades = $pdo->query("SELECT * FROM Especialidades")->fetchAll(PDO::FET
 $medicos_disponibles = [];
 $bloques_libres = [];
 $mensaje = "";
-$error = ""; // Agregamos la variable de error
+$error = ""; 
 
 $id_cm = isset($_POST['id_cm']) ? $_POST['id_cm'] : null;
 $id_espec = isset($_POST['id_espec']) ? $_POST['id_espec'] : null;
@@ -24,7 +24,7 @@ $hora_seleccionada = isset($_POST['hora_seleccionada']) ? $_POST['hora_seleccion
 $comentario = isset($_POST['comentario']) ? $_POST['comentario'] : null;
 $confirmar_final = isset($_POST['confirmar_final']) ? $_POST['confirmar_final'] : null;
 
-// 1. Filtrar médicos por centro y especialidad
+// Filtrar médicos por centro y especialidad
 if ($id_cm && $id_espec) {
     $sql_med = "SELECT DISTINCT m.rut_med, m.Nombre_med 
                 FROM Medicos m
@@ -38,7 +38,7 @@ if ($id_cm && $id_espec) {
 
 $fecha_minima = date('Y-m-d', strtotime('+1 day'));
 
-// 2. Si hay médico y fecha seleccionada (y no estamos en el paso de confirmar todavía)
+//  Si hay médico y fecha seleccionada
 if ($rut_med && $fecha && !$confirmar_final && !$hora_seleccionada) {
     if ($fecha < $fecha_minima) {
         $error = "Error: Solo se permiten reservas desde el día " . $fecha_minima . " en adelante.";
@@ -60,7 +60,7 @@ if ($rut_med && $fecha && !$confirmar_final && !$hora_seleccionada) {
     }
 }
 
-// 3. Procesar inserción final cuando el usuario hace clic en "Confirmar Reserva"
+// Procesar inserción final cuando el usuario hace clic en "Confirmar Reserva"
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $confirmar_final == '1') {
     $rut_pac = $_SESSION['rut'];
     
@@ -75,28 +75,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $confirmar_final == '1') {
     $stmt_est = $pdo->query("SELECT id_estado FROM Estado WHERE tipo_estado = 'Reservada'");
     $id_estado = $stmt_est->fetchColumn();
 
-    // 1. REGLA: El paciente no puede tener dos citas a la misma fecha y hora
+    // REGLA: El paciente no puede tener dos citas a la misma fecha y hora
     $stmt_paciente = $pdo->prepare("SELECT COUNT(*) FROM Citas WHERE rut_pac = ? AND fecha_y_hora = ? AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado != 'Cancelada')");
     $stmt_paciente->execute([$rut_pac, $fecha_y_hora_final]);
     if ($stmt_paciente->fetchColumn() > 0) {
         $error = "Ya tienes otra cita agendada en esa misma fecha y hora.";
     }
 
-    // 2. REGLA: Sin sobre-agendamiento del médico
+    // REGLA: Sin sobre-agendamiento del médico
     $stmt_medico = $pdo->prepare("SELECT COUNT(*) FROM Citas WHERE rut_med = ? AND fecha_y_hora = ? AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado != 'Cancelada')");
     $stmt_medico->execute([$rut_med, $fecha_y_hora_final]);
     if (empty($error) && $stmt_medico->fetchColumn() > 0) {
         $error = "El médico ya tiene una cita ocupada en ese horario. Alguien más lo reservó primero.";
     }
 
-    // 3. REGLA: El médico debe poseer la especialidad solicitada
+    // REGLA: El médico debe poseer la especialidad solicitada
     $stmt_espec = $pdo->prepare("SELECT COUNT(*) FROM Medico_especialidad WHERE rut_med = ? AND id_espec = ?");
     $stmt_espec->execute([$rut_med, $id_espec]);
     if (empty($error) && $stmt_espec->fetchColumn() == 0) {
         $error = "El médico seleccionado no posee la especialidad requerida.";
     }
 
-    // 4. REGLA: El médico debe atender en el centro seleccionado
+    // REGLA: El médico debe atender en el centro seleccionado
     $stmt_centro = $pdo->prepare("SELECT COUNT(*) FROM Medicos_centro WHERE rut_med = ? AND id_cm = ?");
     $stmt_centro->execute([$rut_med, $id_cm]);
     if (empty($error) && $stmt_centro->fetchColumn() == 0) {
@@ -174,7 +174,7 @@ if ($rut_med) {
             <div class="alert-error"><?php echo $error; ?></div>
         <?php endif; ?>
 
-        <!-- PASO EXTRA: PANTALLA DE PRE-CONFIRMACIÓN -->
+        <!-- PANTALLA DE PRE-CONFIRMACIÓN -->
         <?php if($hora_seleccionada && !$confirmar_final): ?>
             <div class="resumen-box">
                 <h3>Resumen de su Cita (Por favor confirme)</h3>

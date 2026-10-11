@@ -12,13 +12,13 @@ $rut = $_SESSION['rut'];
 $mensaje = "";
 $error = "";
 
-// 1. Validar que venga el ID de la cita
+// Validar que venga el ID de la cita
 if (!isset($_GET['id_cita'])) {
     die("ID de cita no proporcionado.");
 }
 $id_cita = $_GET['id_cita'];
 
-// 2. Obtener datos de la cita actual y validar que pertenezca al paciente
+// Obtener datos de la cita actual y validar que pertenezca al paciente
 $sql_cita = "SELECT c.*, m.Nombre_med, cm.nombre_cm, est.tipo_estado 
              FROM Citas c 
              JOIN Medicos m ON c.rut_med = m.rut_med 
@@ -33,7 +33,7 @@ if (!$cita) {
     die("Cita no encontrada o no tienes permisos para verla.");
 }
 
-// Reglas de negocio: Solo modificable si es futura y Reservada/Confirmada
+// Solo modificable si es futura y Reservada/Confirmada
 $es_futura = strtotime($cita['fecha_y_hora']) > time();
 $estado_lower = strtolower($cita['tipo_estado']);
 $es_modificable = ($estado_lower == 'reservada' || $estado_lower == 'confirmada');
@@ -42,11 +42,11 @@ if (!$es_futura || !$es_modificable) {
     die("Esta cita no cumple las condiciones para ser reprogramada.");
 }
 
-// 3. Procesar la actualización si se envió el formulario final
+//  Procesar la actualización si se envió el formulario final
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_reprogramacion'])) {
     $nueva_fecha_hora = $_POST['fecha'] . ' ' . $_POST['hora'];
     
-    // Validación final de choque de horas (Concurrencia)
+    // Validación final de choque de horas
     $stmt_choque = $pdo->prepare("SELECT COUNT(*) FROM Citas WHERE rut_med = ? AND fecha_y_hora = ? AND id_estado IN (SELECT id_estado FROM Estado WHERE tipo_estado IN ('Reservada', 'Confirmada'))");
     $stmt_choque->execute([$cita['rut_med'], $nueva_fecha_hora]);
     
@@ -61,11 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmar_reprogramac
     }
 }
 
-// 4. Lógica de Horas Disponibles (Si se seleccionó una fecha)
+// Lógica de Horas Disponibles (Si se seleccionó una fecha)
 $fecha_seleccionada = $_POST['fecha'] ?? date('Y-m-d', strtotime('+1 day'));
 $horas_disponibles = [];
 
-// Definimos los bloques de atención del centro médico (Ej: 09:00 a 17:00)
+// Definimos los bloques de atención del centro médico 
 $bloques_posibles = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
 // Consultar qué horas ya tiene ocupadas el médico ese día (Reservadas o Confirmadas)
@@ -78,7 +78,7 @@ $stmt_oc = $pdo->prepare($sql_ocupadas);
 $stmt_oc->execute([$cita['rut_med'], $fecha_seleccionada]);
 $horas_bd = $stmt_oc->fetchAll(PDO::FETCH_COLUMN);
 
-// Limpiar el formato de BD (09:00:00 -> 09:00)
+// Limpiar el formato de BD 
 $horas_ocupadas = array_map(function($h) { return substr($h, 0, 5); }, $horas_bd);
 
 // Las horas disponibles son las posibles menos las ocupadas

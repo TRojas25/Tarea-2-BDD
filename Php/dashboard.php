@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Si no hay sesión iniciada, lo devolvemos al login
 if (!isset($_SESSION['rut'])) {
     header("Location: index.php");
     exit;
