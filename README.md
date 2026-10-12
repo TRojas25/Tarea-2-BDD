@@ -18,10 +18,13 @@
 ## Usuarios de prueba:
 
 Pacientes: 22000001-1 Contraseña: Pac123#
+
 Pacientes: 22000002-2 Contraseña: Pac123#
+
 Pacientes: 22000003-3 Contraseña: Pac123#
 
 Médicos: 12000001-1  Contraseña: Med123#
+
 Médicos: 12000023-3  Contraseña: Med123#
 
 Administrador: 10000000-0 Contraseña: Adm123#
