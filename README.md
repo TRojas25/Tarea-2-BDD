@@ -42,8 +42,8 @@ Se asume que el catálogo de diagnósticos (código CIE-10 y descripción) es pr
 
 ## Procedimientos de SQL implementados
  Tipo        Nombre                        Función 
- Procedure   `Agregar_Diagnostico`       
- Trigger     `Trg_Cita_Atendida`         
+ Procedure   `Agregar_Diagnostico`         Permite agregar un diagnóstico de forma sencilla.
+ Trigger     `Trg_Cita_Atendida`            
  View        `Vista_Resumen_Citas`     
  Function    `Obtener_Edad_Paciente`       
 
