@@ -47,12 +47,11 @@ Se asume que el catálogo de diagnósticos (código CIE-10 y descripción) es pr
 
 
 ## Procedimientos de SQL implementados
- Tipo        Nombre                        Función 
- Procedure   `Agregar_Diagnostico`         Permite insertar un nuevo registro de diagnóstico (código CIE-10 y descripción) en la tabla Diagnosticos.
- 
- Trigger     `Trg_Cita_Atendida`           Actualiza automáticamente el estado de una cita a "Atendida" en la tabla Citas tras registrar una nueva atención.
- 
- View        `Vista_Resumen_Citas`         Genera una vista consolidada de las citas mostrando ID, paciente, médico, fecha/hora y estado.
- 
- Function    `Obtener_Edad_Paciente`       Calcula y retorna la edad exacta de un paciente en años a partir de su fecha de nacimiento.
+
+| Tipo | Nombre | Función |
+| :--- | :--- | :--- |
+| Procedure | `Agregar_Diagnostico` | Permite insertar un nuevo registro de diagnóstico (código CIE-10 y descripción) en la tabla Diagnosticos. |
+| Trigger | `Trg_Cita_Atendida` | Actualiza automáticamente el estado de una cita a "Atendida" tras registrar una nueva atención. |
+| View | `Vista_Resumen_Citas` | Genera una vista consolidada de las citas mostrando ID, paciente, médico, fecha/hora y estado. |
+| Function | `Obtener_Edad_Paciente` | Calcula y retorna la edad exacta de un paciente en años a partir de su fecha de nacimiento. |
 
