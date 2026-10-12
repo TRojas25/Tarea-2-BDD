@@ -38,7 +38,11 @@ Al momento de crear una contraseña los requisitos mínimos son: seis caracteres
 Si un paciente borra su cuenta, no se borrarán las citas ni atenciones de la base de datos (solamente las citas Reservadas ahora pasaran a Canceladas).
 Si además este paciente quiere volver a crear su cuenta, se actualizaran los datos como su nombre o previsión de la base de datos, y se mostraran las citas y atenciones pasadas.
 
+
+
 ## Supuestos:
+
+Para simplificar la gestión del sistema, el atributo de correo electrónico (e-mail) es exclusivo de los usuarios con rol Médico. Los usuarios con rol Paciente no poseen un correo electrónico asociado en la base de datos ni se les solicita al momento de registrarse.
 
 Cuando el administrador desea quitar una especialidad o un centro a un médico que tenga citas futuras asociadas, 
 el sistema lo impedirá. Para ello deberá manualmente el médico o el administrador modificar esas citas futuras asociadas. Por ejemplo cancelandolas.
