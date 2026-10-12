@@ -9,7 +9,7 @@
 1. Copiar la carpeta Tarea-2-BDD dentro de `htdocs` de XAMPP.
 2. Iniciar Apache y MySQL desde el panel de XAMPP.
 3. Importar el script SQL desde phpMyAdmin (`http://localhost/phpmyadmin`):
-   SQL\saludusm.sql
+   Sql\saludusm.sql
 4. Abrir el sistema en: <http://localhost/Tarea-2-BDD/Php/>
 
 
