@@ -23,6 +23,8 @@ docker exec -it mongo1 mongosh --port 30001 --eval "rs.initiate({_id: 'my-replic
 ```
 4. Ejecutar el cuadernillo de Jupyter
 
+5. En caso de que los pasos 1, 2 y 3 ya se hayan realizado, basta con encender los contenedores en docker y tener la base de datos en **XAMPP** para la ejecución del punto 4.
+
 ## Criterio de desempate en la consulta D 
 
 El criterio de desempate aplicado en el aggregation pipeline en caso de que dos o más medicamentos posean la misma cantidad de recetas es un ordenamiento alfabético ascendente por el nombre del medicamento.
