@@ -15,7 +15,7 @@
 
 ## Instrucciones para correcta ejecución 
 
-1. Configuración de los nombres: Para que Python y docekr puedan conectarse correctamente con los nodos del cluster, se debe editar el archivo **hosts**. Para esto se debe abrir el bloc de notas como administrador y buscar el archivo `C:\Windows\System32\drivers\etc\hosts`. Posteriormente agregar la siguiente linea al final del: 127.0.0.1 mongo1 mongo2 mongo3.
+1. Configuración de los nombres: Para que Python y docker puedan conectarse correctamente con los nodos del cluster, se debe editar el archivo **hosts**. Para esto se debe abrir el bloc de notas como administrador y buscar el archivo `C:\Windows\System32\drivers\etc\hosts`. Posteriormente agregar la siguiente linea al final del: 127.0.0.1 mongo1 mongo2 mongo3.
 2. Cluster en MongoDB: Abra una terminal en la raíz de esta carpeta (T3) y ejecute el archivo de configuración de Docker: docker-compose -f deploy.yml up -d. Lo que creara los 3 contenedores.
 3. Iniciar la replicación: Una vez que los contenedores estén corriendo, ejecute el siguiente comando en la terminal para inicializar el Replica Set.
 ```powershell
